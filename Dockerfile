@@ -6,10 +6,10 @@ GOOGLE_DEFAULT=true BING_DEFAULT= \
 OPENMETRICS_PASSWORD= \
 PRIVACYPOLICY= \
 DONATION_URL= \
-CONTACT=https://vojk.au \
+CONTACT=https://admingod.ch\
 FOOTER_MESSAGE= \
-ISSUE_URL=https://github.com/privau/searxng/issues GIT_URL=https://github.com/privau/searxng GIT_BRANCH=main \
-UPSTREAM_COMMIT=7d08c6968ebf0ab6c73f637bf63033ce3c9f60c0
+ISSUE_URL=https://github.com/AdminGodZ/searxng/issues GIT_URL=https://github.com/AdminGodZ/searxng GIT_BRANCH=main \
+UPSTREAM_COMMIT=28d1240fce945a48a2c61c29fff83336410c4c77
 
 COPY ./requirements.txt .
 
@@ -48,7 +48,7 @@ WORKDIR /usr/local/searxng
 RUN addgroup -g ${GID} searxng \
 && adduser -u ${UID} -D -h /usr/local/searxng -s /bin/sh -G searxng searxng \
 && git config --global --add safe.directory /usr/local/searxng \
-&& git clone https://github.com/return42/searxng . \
+&& git clone https://github.com/searxng/searxng . \
 && git reset --hard ${UPSTREAM_COMMIT} \
 && chown -R searxng:searxng . \
 && su searxng -c "/usr/bin/python3 -m searx.version freeze"
@@ -85,11 +85,6 @@ RUN sed -i -e "/if output_format not in settings\\['search'\\]\\['formats'\\]:/a
 # fix opensearch autocompleter (force method of autocompleter to use GET reuqests)
 RUN sed -i '/{% if autocomplete %}/,/{% endif %}/s|method="{{ opensearch_method }}"|method="GET"|g' searx/templates/simple/opensearch.xml
 
-# patch for instant autocompletion
-RUN sed -i '/<span class="show_if_nojs">{{ _(.*) }}<\/span><\/button>/a\        <div class="autocomplete hide_if_nojs"><ul></ul></div>' searx/templates/simple/simple_search.html
-RUN sed -i '/<span class="show_if_nojs">{{ _(.*) }}<\/span><\/button>/a\        <div class="autocomplete hide_if_nojs"><ul></ul></div>' searx/templates/simple/search.html
-
-
 # make run.sh executable, copy uwsgi server ini, set default settings, precompile static theme files
 RUN cp -r -v dockerfiles/uwsgi.ini /etc/uwsgi/; \
 chmod +x /usr/local/bin/run.sh; \
@@ -98,12 +93,12 @@ sed -i -e "/safe_search:/s/0/1/g" \
 -e "/autocomplete_min:/s/4/0/g" \
 -e "/favicon_resolver:/s/\"\"/\"google\"/g" \
 -e "/port:/s/8888/8080/g" \
--e "/simple_style:/s/auto/macchiato/g" \
+-e "/simple_style:/s/auto/mocha/g" \
 -e "/infinite_scroll:/s/false/true/g" \
 -e "/query_in_title:/s/false/true/g" \
 -e "s+donation_url: https://docs.searxng.org/donate.html+donation_url: false+g" \
 -e "/bind_address:/s/127.0.0.1/0.0.0.0/g" \
--e '/default_lang:/s/ ""/ en/g' \
+-e '/default_lang:/s/ ""/ auto/g' \
 -e "/method:/s/\"POST\"/\"GET\"/g" \
 -e "/http_protocol_version:/s/1.0/1.1/g" \
 -e "/X-Content-Type-Options: nosniff/d" \
@@ -153,11 +148,11 @@ sed -i -e "/safe_search:/s/0/1/g" \
 -e "/name: unsplash/s/$/\n    disabled: true/g" \
 -e "/name: gentoo/s/$/\n    disabled: true/g" \
 -e "/name: openverse/s/$/\n    disabled: true/g" \
--e "/name: google videos/s/$/\n    disabled: true/g" \
+-e "/name: google videos/s/$/\n    disabled: false/g" \
 -e "/name: yahoo news/s/$/\n    disabled: true/g" \
 -e "/name: bing news/s/$/\n    disabled: true/g" \
 -e "/name: tineye/s/$/\n    disabled: true/g" \
--e "/engine: startpage/s/$/\n    disabled: true/g" \
+-e "/name: startpage/s/$/\n    disabled: true/g" \
 -e "/shortcut: fd/{n;s/.*/    disabled: false/}" \
 searx/settings.yml; \
 su searxng -c "/usr/bin/python3 -m compileall -q searx"; \
